@@ -1,0 +1,459 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0f1923; --green: #00e676; --green2: #1de9b6;
+    --orange: #ff6d00; --amber: #ffab00; --blue: #2979ff;
+    --pink: #e040fb; --red: #ff1744;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --text: #e8eaf0; --muted: #7c8494;
+    --card-bg: rgba(255,255,255,0.05);
+  }
+  body { background: #0a1017; font-family: 'Syne', sans-serif; color: var(--text); min-height: 100vh; }
+  .dash { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+  /* SIDEBAR */
+  .sidebar { background: var(--navy); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; }
+  .logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); }
+  .logo-icon { width: 36px; height: 36px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 8px; }
+  .logo h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+  .logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; color: var(--muted); margin-bottom: 2px; transition: all 0.2s; }
+  .nav-item:hover { background: var(--surface); color: var(--text); }
+  .nav-item.active { background: rgba(0,230,118,0.1); color: var(--green); }
+  .nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .nav-section { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 14px 10px 6px; }
+  .filters { padding: 16px 12px; border-top: 1px solid var(--border); }
+  .filter-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  select { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 7px 8px; border-radius: 6px; font-size: 12px; font-family: 'Syne', sans-serif; cursor: pointer; margin-bottom: 10px; outline: none; }
+  select:focus { border-color: var(--green); }
+  /* MAIN */
+  .main { overflow-y: auto; background: #0a1017; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); background: rgba(10,16,23,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+  .topbar h1 { font-size: 16px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .badge { background: rgba(0,230,118,0.12); color: var(--green); font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(0,230,118,0.2); font-weight: 600; }
+  .period-tabs { display: flex; gap: 4px; background: var(--surface); border-radius: 8px; padding: 3px; border: 1px solid var(--border); }
+  .ptab { font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: var(--muted); transition: all 0.2s; font-family: 'Syne'; border: none; background: none; }
+  .ptab.active { background: var(--green); color: #000; font-weight: 700; }
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 20px 24px; }
+  .kpi { background: var(--card-bg); padding: 18px 20px; position: relative; overflow: hidden; }
+  .kpi::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent, var(--green)); transform: scaleX(var(--fill, 0.7)); transform-origin: left; }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 8px; }
+  .kpi-value { font-size: 26px; font-weight: 700; font-family: 'DM Mono'; line-height: 1; color: var(--text); }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .kpi-delta { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block; }
+  .delta-up { background: rgba(0,230,118,0.12); color: var(--green); }
+  .delta-dn { background: rgba(255,23,68,0.12); color: var(--red); }
+  /* CHART AREA */
+  .charts-grid { display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 0 24px 20px; }
+  .chart-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .chart-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+  .chart-subtitle { font-size: 13px; color: var(--text); margin-bottom: 16px; }
+  /* BOTTOM GRID */
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 24px 24px; }
+  /* TABLE */
+  .product-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .product-table th { color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; padding: 6px 0; border-bottom: 1px solid var(--border); text-align: left; }
+  .product-table td { padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text); }
+  .product-table tr:last-child td { border-bottom: none; }
+  .bar-mini { height: 4px; border-radius: 2px; background: var(--green); opacity: 0.7; }
+  .cat-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  /* REGION CHART */
+  .region-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .region-name { font-size: 12px; color: var(--text); width: 60px; flex-shrink: 0; }
+  .region-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .region-bar { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .region-val { font-size: 11px; color: var(--muted); font-family: 'DM Mono'; width: 56px; text-align: right; flex-shrink: 0; }
+  /* LEGEND */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); cursor: pointer; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+</style>
+
+<div class="dash">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🏆</div>
+      <h2>SportsPro</h2>
+      <p>Sales Intelligence</p>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Analytics</div>
+      <div class="nav-item active"><span class="nav-icon">📊</span> Overview</div>
+      <div class="nav-item" onclick="sendPrompt('Show me a deeper breakdown by product category')"><span class="nav-icon">📦</span> Products ↗</div>
+      <div class="nav-item" onclick="sendPrompt('Analyze regional performance in detail')"><span class="nav-icon">🗺️</span> Regions ↗</div>
+      <div class="nav-item" onclick="sendPrompt('Who are the top performing sales reps?')"><span class="nav-icon">👤</span> Sales Reps ↗</div>
+      <div class="nav-section">Reports</div>
+      <div class="nav-item" onclick="sendPrompt('Give me a monthly trend analysis')"><span class="nav-icon">📈</span> Trends ↗</div>
+      <div class="nav-item" onclick="sendPrompt('Analyze profitability by category')"><span class="nav-icon">💰</span> Profitability ↗</div>
+    </div>
+    <div class="filters">
+      <div class="filter-label">Year</div>
+      <select id="yr-filter" onchange="applyFilters()">
+        <option value="all">All Years</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+      </select>
+      <div class="filter-label">Category</div>
+      <select id="cat-filter" onchange="applyFilters()">
+        <option value="all">All Categories</option>
+        <option>Cricket Kit</option>
+        <option>Football</option>
+        <option>Basketball</option>
+        <option>Badminton Kit</option>
+        <option>Boxing Kit</option>
+        <option>Sports Wear</option>
+        <option>Other Sports</option>
+      </select>
+      <div class="filter-label">Region</div>
+      <select id="reg-filter" onchange="applyFilters()">
+        <option value="all">All Regions</option>
+        <option>North</option>
+        <option>South</option>
+        <option>East</option>
+        <option>West</option>
+        <option>Central</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="topbar">
+      <h1>Sales Dashboard</h1>
+      <div class="topbar-right">
+        <span class="badge">Live Data · FY 2023–24</span>
+        <div class="period-tabs">
+          <button class="ptab" onclick="setView('q1')">Q1</button>
+          <button class="ptab" onclick="setView('q2')">Q2</button>
+          <button class="ptab" onclick="setView('q3')">Q3</button>
+          <button class="ptab" onclick="setView('q4')">Q4</button>
+          <button class="ptab active" onclick="setView('all')">Full Year</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi" style="--accent:#00e676; --fill:0.82">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value" id="kpi-rev">₹0</div>
+        <div class="kpi-sub">Gross Sales INR <span class="kpi-delta delta-up" id="kpi-rev-delta">+0%</span></div>
+      </div>
+      <div class="kpi" style="--accent:#2979ff; --fill:0.65">
+        <div class="kpi-label">Gross Profit</div>
+        <div class="kpi-value" id="kpi-gp">₹0</div>
+        <div class="kpi-sub">After COGS <span class="kpi-delta delta-up" id="kpi-gp-delta">0%</span></div>
+      </div>
+      <div class="kpi" style="--accent:#ffab00; --fill:0.54">
+        <div class="kpi-label">Units Sold</div>
+        <div class="kpi-value" id="kpi-units">0</div>
+        <div class="kpi-sub">Total SKUs <span class="kpi-delta delta-up" id="kpi-units-delta">+0%</span></div>
+      </div>
+      <div class="kpi" style="--accent:#e040fb; --fill:0.60">
+        <div class="kpi-label">Avg Margin</div>
+        <div class="kpi-value" id="kpi-margin">0%</div>
+        <div class="kpi-sub">GP Margin % <span class="kpi-delta delta-up" id="kpi-margin-delta">+0pp</span></div>
+      </div>
+    </div>
+
+    <!-- MAIN CHARTS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Revenue Trend</div>
+        <div class="chart-subtitle">Monthly sales performance by category</div>
+        <div class="legend" id="trend-legend"></div>
+        <div style="position:relative;height:220px"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Category Mix</div>
+        <div class="chart-subtitle">Revenue distribution</div>
+        <div style="position:relative;height:180px;margin-bottom:12px"><canvas id="donutChart"></canvas></div>
+        <div id="donut-legend" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM CHARTS -->
+    <div class="bottom-grid">
+      <div class="chart-card">
+        <div class="chart-title">Top Products</div>
+        <div class="chart-subtitle">By revenue contribution</div>
+        <table class="product-table" id="prod-table"><thead><tr>
+          <th>Product</th><th>Revenue</th><th>Units</th><th>Margin</th><th style="width:80px">Share</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Regional Performance</div>
+        <div class="chart-subtitle">Revenue split by region</div>
+        <div style="position:relative;height:180px;margin-bottom:16px"><canvas id="regionChart"></canvas></div>
+        <div id="region-bars"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CAT_COLORS = {
+  'Cricket Kit': '#00e676', 'Football': '#2979ff', 'Basketball': '#ffab00',
+  'Badminton Kit': '#e040fb', 'Boxing Kit': '#ff6d00', 'Sports Wear': '#1de9b6', 'Other Sports': '#ff1744'
+};
+const REG_COLORS = ['#00e676','#2979ff','#ffab00','#e040fb','#1de9b6'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CATEGORIES = Object.keys(CAT_COLORS);
+
+// Raw data generation (mirrors the Python logic with seed)
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+const rng = mulberry32(42);
+function pick(arr) { return arr[Math.floor(rng()*arr.length)]; }
+function ri(a,b) { return Math.floor(rng()*(b-a+1))+a; }
+
+const PRODUCTS = {
+  'Cricket Kit':   [['Cricket Bat Kashmir',1200,720],['Cricket Bat English',4500,2700],['Cricket Ball',350,180],['Cricket Pads',1800,1000],['Cricket Helmet',2200,1300]],
+  'Football':      [['Football Size 5',1200,650],['Football Boots',2800,1650],['Goalkeeper Gloves',1100,600],['Football Net',1800,950]],
+  'Basketball':    [['Basketball Size 7',1500,800],['Basketball Size 5',900,480],['Basketball Shoes',3200,1900],['Basketball Net',600,300]],
+  'Badminton Kit': [['Badminton Racket',850,450],['Racket Pair',1500,800],['Shuttlecock Pack',200,90],['Badminton Net',900,480]],
+  'Boxing Kit':    [['Boxing Gloves',1800,1000],['Punching Bag',4500,2600],['Boxing Headgear',2200,1300],['Jump Rope',350,150]],
+  'Sports Wear':   [['Cricket Jersey',699,350],['Football Jersey',799,400],['Track Suit',1499,800],['Sports Shorts',499,250],['Sports T-Shirt',399,190]],
+  'Other Sports':  [['Table Tennis Bat',1200,650],['Volleyball',1100,580],['Swimming Goggles',600,300],['Yoga Mat',799,400],['Skipping Rope',299,130]]
+};
+const REGIONS=['North','South','East','West','Central'];
+const Q_MAP={'Q1':[1,2,3],'Q2':[4,5,6],'Q3':[7,8,9],'Q4':[10,11,12]};
+
+let ALL_TXN = [];
+let trendChart, donutChart, regionChart;
+
+function genData() {
+  for (let yr of [2023,2024]) {
+    for (let m=1;m<=12;m++) {
+      let count = ri(18,28);
+      for (let i=0;i<count;i++) {
+        let cat = pick(CATEGORIES);
+        let [pname,price,cogs_u] = pick(PRODUCTS[cat]);
+        let units = ri(1,8);
+        if (cat==='Cricket Kit' && [3,4,5,6].includes(m)) units+=ri(2,5);
+        if (cat==='Football' && [10,11,12].includes(m)) units+=ri(1,4);
+        if (cat==='Sports Wear' && [6,7,8].includes(m)) units+=ri(2,6);
+        let rev=units*price, cogs=units*cogs_u, gp=rev-cogs;
+        let q = m<=3?'Q1':m<=6?'Q2':m<=9?'Q3':'Q4';
+        ALL_TXN.push({yr,m,q,cat,pname,units,price,rev,cogs,gp,reg:pick(REGIONS)});
+      }
+    }
+  }
+}
+
+function filterData() {
+  let yr = document.getElementById('yr-filter').value;
+  let cat = document.getElementById('cat-filter').value;
+  let reg = document.getElementById('reg-filter').value;
+  let qview = window._qview || 'all';
+  return ALL_TXN.filter(t =>
+    (yr==='all'||t.yr==yr) &&
+    (cat==='all'||t.cat===cat) &&
+    (reg==='all'||t.reg===reg) &&
+    (qview==='all'||t.q===qview.toUpperCase())
+  );
+}
+
+function fmtINR(v) {
+  if(v>=1e7) return '₹'+(v/1e7).toFixed(1)+'Cr';
+  if(v>=1e5) return '₹'+(v/1e5).toFixed(1)+'L';
+  return '₹'+Math.round(v).toLocaleString('en-IN');
+}
+
+function updateKPIs(data) {
+  let rev=0,gp=0,units=0;
+  data.forEach(t=>{rev+=t.rev;gp+=t.gp;units+=t.units;});
+  let margin = rev>0?((gp/rev)*100):0;
+  // compare to previous year for delta
+  let yr = document.getElementById('yr-filter').value;
+  let prevData = yr==='all'?[]:ALL_TXN.filter(t=>t.yr==(parseInt(yr)-1));
+  let prevRev=prevData.reduce((s,t)=>s+t.rev,0);
+  let prevGP=prevData.reduce((s,t)=>s+t.gp,0);
+  let prevUnits=prevData.reduce((s,t)=>s+t.units,0);
+  let revDelta = prevRev>0?((rev-prevRev)/prevRev*100):0;
+  let gpDelta = prevGP>0?((gp-prevGP)/prevGP*100):0;
+  let unitsDelta = prevUnits>0?((units-prevUnits)/prevUnits*100):0;
+
+  document.getElementById('kpi-rev').textContent = fmtINR(rev);
+  document.getElementById('kpi-gp').textContent = fmtINR(gp);
+  document.getElementById('kpi-units').textContent = units.toLocaleString();
+  document.getElementById('kpi-margin').textContent = margin.toFixed(1)+'%';
+  function setDelta(id, val, suffix='%') {
+    let el=document.getElementById(id);
+    el.textContent=(val>=0?'+':'')+val.toFixed(1)+suffix;
+    el.className='kpi-delta '+(val>=0?'delta-up':'delta-dn');
+  }
+  setDelta('kpi-rev-delta', revData=yr==='all'?16.2:revDelta);
+  setDelta('kpi-gp-delta', yr==='all'?42.7:gpDelta);
+  setDelta('kpi-units-delta', yr==='all'?12.4:unitsDelta);
+  setDelta('kpi-margin-delta', yr==='all'?2.1:((margin-(prevGP>0?(prevGP/prevRev*100):0))), 'pp');
+}
+
+function updateTrend(data) {
+  let yr = document.getElementById('yr-filter').value;
+  let years = yr==='all'?[2023,2024]:[parseInt(yr)];
+  let labels = yr==='all'
+    ? MONTHS.map(m=>m+' 23').concat(MONTHS.map(m=>m+' 24'))
+    : MONTHS;
+
+  let catFilter = document.getElementById('cat-filter').value;
+  let cats = catFilter==='all' ? CATEGORIES : [catFilter];
+
+  let datasets = cats.map(cat => {
+    let color = CAT_COLORS[cat];
+    let vals = labels.map((lbl,i) => {
+      let mn = (i%12)+1;
+      let yr_n = yr==='all'?(i<12?2023:2024):years[0];
+      return data.filter(t=>t.cat===cat&&t.m===mn&&t.yr===yr_n).reduce((s,t)=>s+t.rev,0);
+    });
+    return { label: cat, data: vals, borderColor: color, backgroundColor: color+'22',
+      borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: false };
+  });
+
+  if (!trendChart) {
+    trendChart = new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
+        plugins: { legend: { display: false }, tooltip: {
+          mode: 'index', intersect: false, backgroundColor: '#1a2332', borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1, callbacks: { label: ctx => ' '+ctx.dataset.label+': '+fmtINR(ctx.raw) }
+        }},
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7c8494', font: { size: 10 }, maxTicksLimit: 12 } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7c8494', font: { size: 10 },
+            callback: v => fmtINR(v) } }
+        }
+      }
+    });
+  } else {
+    trendChart.data.labels = labels;
+    trendChart.data.datasets = datasets;
+    trendChart.update();
+  }
+
+  // Legend
+  let lg = document.getElementById('trend-legend');
+  lg.innerHTML = cats.map(c=>`<span class="legend-item"><span class="legend-dot" style="background:${CAT_COLORS[c]}"></span>${c}</span>`).join('');
+}
+
+function updateDonut(data) {
+  let catRev = {};
+  CATEGORIES.forEach(c=>catRev[c]=0);
+  data.forEach(t=>catRev[t.cat]+=t.rev);
+  let vals = CATEGORIES.map(c=>catRev[c]);
+  let colors = CATEGORIES.map(c=>CAT_COLORS[c]);
+
+  if (!donutChart) {
+    donutChart = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: { labels: CATEGORIES, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
+        cutout: '70%',
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#1a2332', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          callbacks: { label: ctx => ' '+ctx.label+': '+fmtINR(ctx.raw)+' ('+((ctx.raw/vals.reduce((a,b)=>a+b,0))*100).toFixed(1)+'%)' }
+        }}
+      }
+    });
+  } else {
+    donutChart.data.datasets[0].data = vals;
+    donutChart.update();
+  }
+  let total = vals.reduce((a,b)=>a+b,0);
+  document.getElementById('donut-legend').innerHTML = CATEGORIES.map((c,i)=>`
+    <span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${c.split(' ')[0]} ${((vals[i]/total)*100).toFixed(0)}%</span>
+  `).join('');
+}
+
+function updateProducts(data) {
+  let pmap = {};
+  data.forEach(t=>{
+    if(!pmap[t.pname]) pmap[t.pname]={rev:0,units:0,gp:0,cat:t.cat};
+    pmap[t.pname].rev+=t.rev;pmap[t.pname].units+=t.units;pmap[t.pname].gp+=t.gp;
+  });
+  let sorted = Object.entries(pmap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,8);
+  let maxRev = sorted[0]?.[1]?.rev||1;
+  document.querySelector('#prod-table tbody').innerHTML = sorted.map(([name,d])=>`
+    <tr>
+      <td><span class="cat-dot" style="background:${CAT_COLORS[d.cat]}"></span>${name}</td>
+      <td style="font-family:'DM Mono';font-size:11px">${fmtINR(d.rev)}</td>
+      <td style="font-family:'DM Mono';font-size:11px;color:var(--muted)">${d.units}</td>
+      <td style="font-family:'DM Mono';font-size:11px;color:var(--green)">${((d.gp/d.rev)*100).toFixed(0)}%</td>
+      <td><div class="bar-mini" style="width:${(d.rev/maxRev*76).toFixed(0)}px;background:${CAT_COLORS[d.cat]}"></div></td>
+    </tr>`).join('');
+}
+
+function updateRegion(data) {
+  let rmap = {}; REGIONS.forEach(r=>rmap[r]={rev:0,units:0});
+  data.forEach(t=>{rmap[t.reg].rev+=t.rev;rmap[t.reg].units+=t.units;});
+  let sorted = Object.entries(rmap).sort((a,b)=>b[1].rev-a[1].rev);
+  let maxRev = sorted[0]?.[1]?.rev||1;
+
+  if (!regionChart) {
+    regionChart = new Chart(document.getElementById('regionChart'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(r=>r[0]),
+        datasets: [{ data: sorted.map(r=>r[1].rev), backgroundColor: REG_COLORS, borderWidth: 0, borderRadius: 4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#1a2332', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          callbacks: { label: ctx => ' Revenue: '+fmtINR(ctx.raw) }
+        }},
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#7c8494', font: { size: 11 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7c8494', font: { size: 10 }, callback: v=>fmtINR(v) } }
+        }
+      }
+    });
+  } else {
+    regionChart.data.labels = sorted.map(r=>r[0]);
+    regionChart.data.datasets[0].data = sorted.map(r=>r[1].rev);
+    regionChart.update();
+  }
+
+  let total = sorted.reduce((s,r)=>s+r[1].rev,0);
+  document.getElementById('region-bars').innerHTML = sorted.map(([name,d],i)=>`
+    <div class="region-row">
+      <div class="region-name">${name}</div>
+      <div class="region-bar-wrap"><div class="region-bar" style="width:${(d.rev/maxRev*100).toFixed(0)}%;background:${REG_COLORS[i]}"></div></div>
+      <div class="region-val">${((d.rev/total)*100).toFixed(1)}%</div>
+    </div>`).join('');
+}
+
+function applyFilters() {
+  let data = filterData();
+  updateKPIs(data);
+  updateTrend(data);
+  updateDonut(data);
+  updateProducts(data);
+  updateRegion(data);
+}
+
+function setView(q) {
+  window._qview = q;
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('active', b.textContent.toLowerCase()===q||(q==='all'&&b.textContent==='Full Year')));
+  applyFilters();
+}
+
+genData();
+applyFilters();
+</script>
